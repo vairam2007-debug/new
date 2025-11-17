@@ -84,6 +84,15 @@
                         <label for="itemImage">Image URL (Optional - Auto-fetched from web if empty):</label>
                         <input type="text" id="itemImage" name="itemImage" placeholder="Enter image URL or leave empty for auto-fetch">
                     </div>
+                    <div class="form-group">
+                        <label for="itemImageUpload">Upload Image (Optional):</label>
+                        <input type="file" id="itemImageUpload" name="itemImageUpload" accept="image/*" onchange="handleItemImageUpload(event)">
+                        <p class="help-text">Upload your own photo or paste an image URL above.</p>
+                        <div id="itemImagePreview" class="image-preview">
+                            <p>No image selected</p>
+                        </div>
+                        <input type="hidden" id="itemImageData" name="itemImageData">
+                    </div>
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">Save Item</button>
                         <button type="button" class="btn btn-secondary" onclick="resetForm()">Reset</button>
