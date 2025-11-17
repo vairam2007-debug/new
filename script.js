@@ -18,6 +18,30 @@ let salesChart = null;
 let editingItemId = null;
 let uploadedQRCode = null;
 
+function updateItemImagePreview(imageSrc) {
+    const preview = document.getElementById('itemImagePreview');
+    if (!preview) return;
+    if (imageSrc) {
+        preview.innerHTML = `<img src="${imageSrc}" alt="Item image preview">`;
+        preview.style.color = '#333';
+    } else {
+        preview.innerHTML = '<p>No image selected</p>';
+        preview.style.color = '#999';
+    }
+}
+
+function clearItemImageInputs() {
+    const uploadInput = document.getElementById('itemImageUpload');
+    const imageDataInput = document.getElementById('itemImageData');
+    if (uploadInput) {
+        uploadInput.value = '';
+    }
+    if (imageDataInput) {
+        imageDataInput.value = '';
+    }
+    updateItemImagePreview('');
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     loadData();
@@ -156,8 +180,11 @@ function getFallbackImageUrls(itemName) {
 // Function to get or fetch image for menu item
 function getItemImage(item) {
     // If image already exists and is a valid URL, use it
-    if (item.image && item.image.trim() !== '' && item.image.startsWith('http')) {
-        return item.image;
+    if (item.image && item.image.trim() !== '') {
+        const trimmed = item.image.trim();
+        if (trimmed.startsWith('http') || trimmed.startsWith('data:image/')) {
+            return trimmed;
+        }
     }
     // Otherwise, fetch based on item name
     return fetchItemImage(item.name);
@@ -493,6 +520,8 @@ function saveMenuItem(event) {
     const name = document.getElementById('itemName').value;
     const price = parseFloat(document.getElementById('itemPrice').value);
     const image = document.getElementById('itemImage').value.trim();
+    const imageData = document.getElementById('itemImageData').value;
+    const finalImage = imageData || image;
     
     if (editingItemId !== null) {
         // Update existing item
@@ -501,8 +530,8 @@ function saveMenuItem(event) {
             item.name = name;
             item.price = price;
             // If image URL provided, use it; otherwise auto-fetch based on name
-            if (image) {
-                item.image = image;
+            if (finalImage) {
+                item.image = finalImage;
             } else {
                 item.image = ''; // Empty string will trigger auto-fetch in displayMenu
             }
@@ -516,7 +545,7 @@ function saveMenuItem(event) {
             id: newId,
             name: name,
             price: price,
-            image: image || '' // Empty string will trigger auto-fetch in displayMenu
+            image: finalImage || '' // Empty string will trigger auto-fetch in displayMenu
         });
     }
     
@@ -534,7 +563,24 @@ function editMenuItem(itemId) {
     document.getElementById('itemId').value = itemId;
     document.getElementById('itemName').value = item.name;
     document.getElementById('itemPrice').value = item.price;
-    document.getElementById('itemImage').value = item.image || '';
+    const imageInput = document.getElementById('itemImage');
+    const imageDataInput = document.getElementById('itemImageData');
+    const hasCustomImage = item.image && item.image.startsWith('data:image/');
+    if (imageInput) {
+        imageInput.value = (!hasCustomImage && item.image) ? item.image : '';
+    }
+    if (imageDataInput) {
+        imageDataInput.value = hasCustomImage ? item.image : '';
+    }
+    if (item.image) {
+        updateItemImagePreview(item.image);
+    } else {
+        updateItemImagePreview('');
+    }
+    const uploadInput = document.getElementById('itemImageUpload');
+    if (uploadInput) {
+        uploadInput.value = '';
+    }
     
     // Scroll to form
     document.getElementById('menuForm').scrollIntoView({ behavior: 'smooth' });
@@ -558,6 +604,7 @@ function resetForm() {
     document.getElementById('menuForm').reset();
     document.getElementById('itemId').value = '';
     editingItemId = null;
+    clearItemImageInputs();
 }
 
 function displayManageMenu() {
@@ -753,6 +800,45 @@ function handleQRUpload(event) {
     reader.onerror = function() {
         document.getElementById('qrUploadStatus').textContent = 'Error uploading QR code. Please try again.';
         document.getElementById('qrUploadStatus').style.color = '#dc3545';
+    };
+    reader.readAsDataURL(file);
+}
+
+function handleItemImageUpload(event) {
+    const file = event.target.files[0];
+    const imageDataInput = document.getElementById('itemImageData');
+    if (!file) {
+        if (imageDataInput) {
+            imageDataInput.value = '';
+        }
+        updateItemImagePreview('');
+        return;
+    }
+    
+    if (!file.type.startsWith('image/')) {
+        alert('Please upload a valid image file');
+        event.target.value = '';
+        if (imageDataInput) {
+            imageDataInput.value = '';
+        }
+        updateItemImagePreview('');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        if (imageDataInput) {
+            imageDataInput.value = e.target.result;
+        }
+        updateItemImagePreview(e.target.result);
+    };
+    reader.onerror = function() {
+        alert('Error reading the image file. Please try again.');
+        event.target.value = '';
+        if (imageDataInput) {
+            imageDataInput.value = '';
+        }
+        updateItemImagePreview('');
     };
     reader.readAsDataURL(file);
 }
