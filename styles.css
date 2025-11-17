@@ -9,6 +9,48 @@ body {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
     padding: 20px;
+    position: relative;
+    overflow-x: hidden;
+    background-attachment: fixed;
+}
+
+body::before,
+body::after {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    z-index: -2;
+    opacity: 0.35;
+    animation: swirlGradient 18s linear infinite;
+    pointer-events: none;
+}
+
+body::before {
+    background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.25), transparent 45%),
+                radial-gradient(circle at 80% 0%, rgba(255,255,255,0.18), transparent 40%),
+                radial-gradient(circle at 50% 80%, rgba(255,255,255,0.2), transparent 45%);
+}
+
+body::after {
+    background: conic-gradient(from 90deg, rgba(255,255,255,0.08), rgba(255,255,255,0)),
+                radial-gradient(circle at 30% 70%, rgba(255,255,255,0.15), transparent 40%);
+    animation-direction: reverse;
+    z-index: -3;
+}
+
+@keyframes swirlGradient {
+    0% {
+        transform: rotate(0deg) scale(1);
+    }
+    50% {
+        transform: rotate(180deg) scale(1.05);
+    }
+    100% {
+        transform: rotate(360deg) scale(1);
+    }
 }
 
 header {
@@ -415,6 +457,32 @@ header h1 {
 .form-group input:focus {
     outline: none;
     border-color: #667eea;
+}
+
+.help-text {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 8px;
+}
+
+.image-preview {
+    margin-top: 10px;
+    padding: 10px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    text-align: center;
+    background: #fff;
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+}
+
+.image-preview img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
 }
 
 .form-actions {
